@@ -1,0 +1,29 @@
+﻿@model TodoList.Models.Product
+ 
+<h2>Редактирование продукта</h2>
+<form asp-controller="product" asp-action="edit" asp-route-id="@Model.Id">
+    <p>
+        <label asp-for="Name">Название</label><br />
+        <input type="text" asp-for="Name" />
+    </p>
+    <p>
+        <label asp-for="Price">Цена</label><br />
+        <input type="text" asp-for="Price" />
+    </p>
+    <p> 
+        <select asp-for="TypeId">
+            <option value="">Виберіть категорію</option>
+            <option value="1">Напитки</option>
+            <option value="2">Молочные Продукты</option>
+            <option value="3">Мясо</option>
+            <option value="4">Фрукты</option>
+        </select>
+    </p>
+    <p>
+        <label asp-for="Description">Описание</label><br />
+        <input type="text" asp-for="Description" />
+    </p>
+    <p>
+        <input type="submit" value="Сохранить" />
+    </p>
+</form>
