@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using TodoList.Models;
 
-namespace TodoList.Models
+namespace TodoList.ViewModels
 {
     public class SortViewModel
     {

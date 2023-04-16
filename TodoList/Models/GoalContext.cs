@@ -2,12 +2,12 @@
 
 namespace TodoList.Models
 {
-    public class ProductsContext : DbContext 
+    public class GoalContext : DbContext 
     {
-        public DbSet<Product> Products { get; set; } = null!;
+        public DbSet<Goal> Goals { get; set; } = null!;
         public DbSet<Type> Types { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
-        public ProductsContext(DbContextOptions<ProductsContext> options)
+        public GoalContext(DbContextOptions<GoalContext> options)
             : base(options)
         {
             Database.EnsureCreated();
