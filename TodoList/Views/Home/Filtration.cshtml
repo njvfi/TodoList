@@ -2,7 +2,8 @@
     ViewData["Title"] = "Sorting";
 }
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@model TodoList.Models.ProductListViewModel
+@model GoalListViewModel
+@using TodoList.ViewModels
   
 <h2>Каталог продуктов</h2>
   
@@ -28,13 +29,13 @@
         <th>Тип</th>
     </tr>
   
-    @foreach (var item in Model.Products)
+    @foreach (var item in Model.Goals)
     {
         <tr>
             <td>
                 <a asp-action="index" asp-controller="product" asp-route-id="@item.Id">@item.Name</a>
             </td>
-            <td>@item.Price</td>
+            <td>@item.Time</td>
             <td>@item.Type?.Name</td>
         </tr>
     }
