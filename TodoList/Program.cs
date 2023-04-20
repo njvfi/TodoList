@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using TodoList.Models;
+using TodoList.DAL.Contexts;
+using TodoList.DAL.Repositories;
 using Task = System.Threading.Tasks.Task;
 
 internal class Program
@@ -16,7 +17,10 @@ internal class Program
 
 
 
-        string connection = builder.Configuration["ConnectionStrings"];
+        string connection = "Server = (localdb)\\mssqllocaldb;Database = TodoListstoredb;Trusted_Connection=true";
+
+        builder.Services.AddScoped<GoalRepository>();
+;
         builder.Services.AddDbContext<GoalContext>(options => options.UseSqlServer(connection));
 
         builder.Services.AddAuthorization();

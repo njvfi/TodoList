@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TodoList.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TodoList.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using TodoList.DAL.Repositories;
+using TodoList.DAL.Entities;
+using Microsoft.Data.SqlClient;
 
 namespace TodoList.Controllers
 {
@@ -11,72 +13,38 @@ namespace TodoList.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        GoalContext db;
+        private readonly GoalRepository _goalRepository;
 
 
         #region Controller
-        public HomeController(ILogger<HomeController> logger, GoalContext context)
+        public HomeController(ILogger<HomeController> logger, GoalRepository goalRepository)
         {
             _logger = logger;
-            db = context;
-
-            // добавим начальные данные для тестирования
-            if (!db.Types.Any())
-            {
-                TodoList.Models.Type not_defined = new TodoList.Models.Type { Name = "Без категорії" };
-                TodoList.Models.Type home = new TodoList.Models.Type { Name = "Роботи по дому" };
-                TodoList.Models.Type sport = new TodoList.Models.Type { Name = "Спорт" };
-                TodoList.Models.Type work = new TodoList.Models.Type { Name = "Робота" };
-
-                Models.Goal goal1 = new Models.Goal { Name = "Ознайомитися з платформою", Description = "Ознайомитися з платформою, навчитися користуватися всіма можливостями", Type = not_defined, Status = false };
-
-                TodoList.Models.User tom = new TodoList.Models.User { Name = "joydip", Id = 0, Password = "joydip123"};
-                tom.Goals.Add(goal1);
-
-                db.Types.AddRange(not_defined, home, home, work);
-                db.Goals.AddRange(goal1);
-                db.Users.AddRange(tom);
-                db.SaveChanges();
-            }
+            _goalRepository = goalRepository;
+            _goalRepository.InitAsync();
         }
         #endregion
 
         [AllowAnonymous]
-        public ActionResult Index(int? type, string? name, SortState sortOrder = SortState.NameAsc)
+        public ActionResult Index()
         {
             return View();
         }
 
-        public ActionResult TaskList(int? type, string? name, SortState sortOrder = SortState.NameAsc)
+        [HttpGet]
+        public async Task<ActionResult> TaskList(int? type, string? name, SortState sortOrder = SortState.NameAsc)
         {
-            IQueryable<Models.Goal> goal = db.Goals.Include<Models.Goal, Models.Type>(p => p.Type);
+            var userid = Convert.ToInt32(Request.Cookies["UserId"]);
 
-            if (type != null && type != 0)
-            {
-                goal = goal.Where(p => p.TypeId == type);
-            }
-            if (!string.IsNullOrEmpty(name))
-            {
-                goal = goal.Where(p => p.Name!.Contains(name));
-            }
+            var goal = await _goalRepository.GetGoalsAsync(type, name, userid, sortOrder);
 
-            goal = sortOrder switch
-            {
-                SortState.NameDesc => goal.OrderByDescending(s => s.Name),
-                SortState.PriceAsc => goal.OrderBy(s => s.Time),
-                SortState.PriceDesc => goal.OrderByDescending(s => s.Time),
-                SortState.TypeAsc => goal.OrderBy(s => s.Type!.Name),
-                SortState.TypeDesc => goal.OrderByDescending(s => s.Type!.Name),
-                _ => goal.OrderBy(s => s.Name),
-            };
-
-            List<TodoList.Models.Type> types = db.Types.ToList();
+            var types = await _goalRepository.GetTypesAsync();
             // устанавливаем начальный элемент, который позволит выбрать всех
-            types.Insert(0, new TodoList.Models.Type { Name = "Все", Id = 0 });
+            types.Insert(0, new DAL.Entities.Type { Name = "Все", Id = 0 });
 
             GoalListViewModel viewModel = new GoalListViewModel
             {
-                Goals = goal.ToList(),
+                Goals = goal,
                 Types = new SelectList(types, "Id", "Name", type),
                 Name = name,
                 SortViewModel = new SortViewModel(sortOrder)
@@ -86,27 +54,21 @@ namespace TodoList.Controllers
         }
 
 
-        public ActionResult Filtration(int? type, string? name)
+        public async Task<ActionResult> Filtration(int? type, string? name)
         {
-            IQueryable<Models.Goal> goals = db.Goals.Include<Models.Goal, Models.Type>(p => p.Type);
-            if (type != null && type != 0)
-            {
-                goals = goals.Where(p => p.TypeId == type);
-            }
-            if (!string.IsNullOrEmpty(name))
-            {
-                goals = goals.Where(p => p.Name!.Contains(name));
-            }
+            var userid = Convert.ToInt32(Request.Cookies["UserId"]);
 
-            List<TodoList.Models.Type> types = db.Types.ToList();
+            var goal = await _goalRepository.GetGoalsAsync(type, name, userid);
+
+            var types = await _goalRepository.GetTypesAsync();
             // устанавливаем начальный элемент, который позволит выбрать всех
-            types.Insert(0, new TodoList.Models.Type { Name = "Все", Id = 0 });
+            types.Insert(0, new DAL.Entities.Type { Name = "Все", Id = 0 });
 
             GoalListViewModel viewModel = new GoalListViewModel
             {
-                Goals = goals.ToList(),
+                Goals = goal,
                 Types = new SelectList(types, "Id", "Name", type),
-                Name = name
+                Name = name,
             };
 
             return View(viewModel);

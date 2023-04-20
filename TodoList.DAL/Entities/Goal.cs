@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TodoList.Models
+namespace TodoList.DAL.Entities
 {
     public class Goal
     {
@@ -14,5 +14,6 @@ namespace TodoList.Models
         public DateTime Time { get; set; }
         public int? TypeId { get; set; }
         public Type? Type { get; set; }
+        public int UserId { get; set; }
     }
 }

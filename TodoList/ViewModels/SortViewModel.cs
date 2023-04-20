@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using TodoList.Models;
+using TodoList.DAL.Entities;
 
 namespace TodoList.ViewModels
 {

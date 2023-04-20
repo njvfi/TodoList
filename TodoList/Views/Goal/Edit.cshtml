@@ -1,7 +1,7 @@
-﻿@model TodoList.Models.Goal
- 
+﻿@model TodoList.DAL.Entities.Goal
+
 <h2>Редагування завдання</h2>
-<form asp-controller="goal" asp-action="edit" asp-route-id="@Model.Id">
+<form asp-controller="Goal" asp-action="Edit" asp-route-id="@Model.Id">
     <p>
         <label asp-for="Name">Назва</label><br />
         <input type="text" asp-for="Name" />

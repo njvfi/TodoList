@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TodoList.Models;
+using TodoList.DAL.Entities;
+using TodoList.DAL.Repositories;
 
 namespace TodoList.Controllers
 {
@@ -9,20 +10,23 @@ namespace TodoList.Controllers
     public class GoalController : Controller
     {
         private readonly ILogger<GoalController> _logger;
-        GoalContext db;
+        private readonly GoalRepository _goalRepository;
 
-        public GoalController(ILogger<GoalController> logger, GoalContext context)
+        public GoalController(ILogger<GoalController> logger, GoalRepository goalRepository)
         {
             _logger = logger;
-            db = context;
+            _goalRepository = goalRepository;
         }
 
         public async Task<ActionResult> Index(int? id)
         {
             if (id != null)
             {
-                Models.Goal? product = await db.Goals.Include<Models.Goal, Models.Type>(pr => pr.Type).FirstOrDefaultAsync(p => p.Id == id);
-                if (product != null) return View(product);
+                var goal = await _goalRepository.GetGoalIncludeAsync(id.Value);
+                if (goal != null)
+                {
+                    return View(goal);
+                }
             }
 
             return NotFound();
@@ -31,22 +35,22 @@ namespace TodoList.Controllers
         #region Creation
         public IActionResult Create()
         {
-            List<TodoList.Models.Type> types = db.Types.ToList();
-
             return View();
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Create(Models.Goal goal)
+        public async Task<IActionResult> Create(Goal goal)
         {
+            var userid = Convert.ToInt32(Request.Cookies["UserId"]);
+            goal.UserId = userid;
+
             if (!ModelState.IsValid)
             {
                 return View(goal);
             }
 
-            db.Goals.Add(goal);
-            await db.SaveChangesAsync();
+            await _goalRepository.CreateGoalAsync(goal);
 
             return RedirectToAction("TaskList", "Home");
         }
@@ -58,9 +62,7 @@ namespace TodoList.Controllers
         {
             if (id != null)
             {
-                Models.Goal goal = new Models.Goal { Id = id.Value };
-                db.Entry(goal).State = EntityState.Deleted;
-                await db.SaveChangesAsync();
+                await _goalRepository.DeleteGoalAsync(id.Value);
 
                 return RedirectToAction("TaskList", "Home");
             }
@@ -70,15 +72,18 @@ namespace TodoList.Controllers
 
 
         #region Edition
+        [HttpGet]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            List<TodoList.Models.Type> companies = db.Types.ToList();
 
             if (id != null)
             {
-                Models.Goal? goal = await db.Goals.FirstOrDefaultAsync(p => p.Id == id);
-                if (goal != null) return View(goal);
+                var goal = await _goalRepository.GetGoalAsync(id.Value);
+                if (goal != null)
+                {
+                    return View(goal);
+                }
             }
 
             return NotFound();
@@ -86,44 +91,28 @@ namespace TodoList.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Models.Goal goal)
+        public async Task<IActionResult> Edit(Goal goal)
         {
+            var userid = Convert.ToInt32(Request.Cookies["UserId"]);
+            goal.UserId = userid;
+
             if (!ModelState.IsValid)
             {
                 return View(goal);
             }
 
-            db.Goals.Update(goal);
-            await db.SaveChangesAsync();
+            await _goalRepository.EditGoalAsync(goal);
 
             return RedirectToAction("TaskList", "home");
         }
         #endregion
 
         [HttpPost]
-        public async Task<IActionResult> ChangeStatusDone(int? id, bool Status)
+        public async Task<IActionResult> ChangeStatus(int? id)
         {
             if (id != null)
             {
-                Models.Goal? goal = await db.Goals.FirstOrDefaultAsync(p => p.Id == id);
-                goal.Status = true;
-                db.Goals.Update(goal);
-                await db.SaveChangesAsync();
-
-                return RedirectToAction("TaskList", "Home");
-            }
-
-            return NotFound();
-        }
-        [HttpPost]
-        public async Task<IActionResult> ChangeStatusUndone(int? id, bool Status)
-        {
-            if (id != null)
-            {
-                Models.Goal? goal = await db.Goals.FirstOrDefaultAsync(p => p.Id == id);
-                goal.Status = false;
-                db.Goals.Update(goal);
-                await db.SaveChangesAsync();
+                await _goalRepository.SwitchGoalStatusAsync(id.Value);
 
                 return RedirectToAction("TaskList", "Home");
             }

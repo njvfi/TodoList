@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TodoList.Models;
-using Microsoft.EntityFrameworkCore;
+using TodoList.DAL.Entities;
+using TodoList.DAL.Repositories;
 
 namespace TodoList.Controllers
 {
@@ -14,12 +13,12 @@ namespace TodoList.Controllers
     public class AccountController : Controller
     {
         IConfiguration _configuration;
-        GoalContext db;
+        private readonly GoalRepository _goalRepository;
 
-        public AccountController(IConfiguration configuration, GoalContext context)
+        public AccountController(IConfiguration configuration, GoalRepository goalRepository)
         {
             _configuration = configuration;
-            db = context;
+            _goalRepository = goalRepository;
         }
 
         #region Login
@@ -31,16 +30,14 @@ namespace TodoList.Controllers
         }
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(User user)
+        public async Task<IActionResult> Login(User user)
         {
-            IQueryable<Models.User> users = db.Users;
             try
             {
-                if (string.IsNullOrEmpty(user.Name) ||
+                if (string.IsNullOrEmpty(user.Email) ||
                 string.IsNullOrEmpty(user.Password))
                     return BadRequest("Username and/or Password not specified");
-                if (user.Name.Equals("joydip") &&
-                user.Password.Equals("joydip123"))
+                if(await _goalRepository.LoginAsync(user))
                 {
                     var secretKey = new SymmetricSecurityKey
                     (Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
@@ -56,6 +53,46 @@ namespace TodoList.Controllers
                     var token = new JwtSecurityTokenHandler().
                     WriteToken(jwtSecurityToken);
                     Response.Cookies.Append("X-Access-Token", token, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+                    Response.Cookies.Append("UserId", user.Id.ToString());
+                    return RedirectToAction("TaskList", "Home");
+                }
+            }
+            catch
+            {
+                return BadRequest
+                ("An error occurred in generating the token");
+            }
+            return Unauthorized();
+        }
+        #endregion
+        #region Register
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> Register(User user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(user);
+            }
+            try
+            {
+                if (string.IsNullOrEmpty(user.Email) ||
+                string.IsNullOrEmpty(user.Name) ||
+                string.IsNullOrEmpty(user.Password))
+                    return BadRequest("Заповніть всі поля");
+                if (await _goalRepository.RegisterAsync(user))
+                {
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    user.Email = "Такий email вже існує";
                     return View(user);
                 }
             }
@@ -67,5 +104,11 @@ namespace TodoList.Controllers
             return Unauthorized();
         }
         #endregion
+        public async Task<IActionResult> Logout()
+        {
+            Response.Cookies.Delete("X-Access-Token");
+
+            return RedirectToAction("Index", "Home");
+        }
     }
 }
