@@ -1,4 +1,4 @@
-﻿namespace TodoList.Models
+﻿namespace TodoList.DAL.Entities
 {
     public enum SortState
     {

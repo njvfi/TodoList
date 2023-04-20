@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model GoalListViewModel
+@using TodoList.ViewModels
+@addTagHelper *, Store
+
+ 
+<h2>Список завдань</h2>
+<p><a asp-action="Create" asp-controller="Goal">Додати завдання</a></p>
+<table class="table">
+     <tr>
+        <th>
+            <sort-header action="TaskList"  up="@Model.SortViewModel.Up"
+                    current="@Model.SortViewModel.Current" property="@Model.SortViewModel.NameSort">
+                Ціль
+            </sort-header>
+        </th>
+        <th>
+            <sort-header action="TaskList" up="@Model.SortViewModel.Up"
+                    current="@Model.SortViewModel.Current" property="@Model.SortViewModel.PriceSort">
+                Термін виконання
+            </sort-header>
+        </th>
+        <th>
+            <sort-header action="TaskList" up="@Model.SortViewModel.Up"
+                    current="@Model.SortViewModel.Current" property="@Model.SortViewModel.TypeSort">
+                Статус
+            </sort-header>
+        </th>
+        <th>
+        </th>
+        <th>
+        </th>
+    </tr>
+
+    @foreach (var item in Model.Goals)
+    {
+        <tr>
+            <td>
+                <a asp-action="Index" asp-controller="Goal" asp-route-id="@item.Id">@item.Name</a>
+            </td>
+            @if(item.Time > DateTime.Now){
+                TimeSpan ActualTime = (DateTime.Now - item.Time).Duration();
+                string OutputTime = ActualTime.Days + " днів " + ActualTime.ToString(@"hh\:mm");
+                <td>Залишилося @OutputTime</td>
+            }
+            else if(item.Time.Year < 2023) {<td></td>}
+            else{<td>Прострочено</td>}
+            <td>
+                @if(item.Status == false)
+                {
+                <form asp-controller="Goal" asp-action="ChangeStatusDone" asp-route-id="@item.Id">
+                    <input type="submit" value="Ще не виконано" />
+                </form>
+                }
+                else
+                {
+                <form asp-controller="Goal" asp-action="ChangeStatusUndone" asp-route-id="@item.Id"> 
+                    <input type="submit" value="Готово" />
+                </form>
+                }
+            </td>
+            <td>
+                <form asp-controller="Goal" asp-action="Edit" method="get"  asp-route-id="@item.Id">
+                    <input type="submit" value="Редагувати" />
+                </form>
+            </td>
+            <td>
+                <form asp-controller="Goal" asp-action="Delete" method="post"  asp-route-id="@item.Id">
+                    <input type="submit" value="Удалить" />
+                </form>
+            </td>
+        </tr>
+    }
+</table>
