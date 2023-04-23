@@ -1,12 +1,18 @@
 ﻿@model TodoList.DAL.Entities.Goal
 
 @{
-    ViewData["Title"] = "Product";
+    ViewData["Title"] = "Goal";
 }
 
-<h1>Товар @Model.Name</h1>
-Категория: @Model.Type?.Name <br />
-Описание товара: @Model.Description<br />
-Цена товара: @Model.Time<br />
+<h1>Завдання @Model.Name</h1>
+Категорія: @Model.Type?.Name <br />
+Описание завдання: @Model.Description<br />
+Термін виконнання: @Model.Time<br />
+Статус: @if(Model.Status == true)
+{
+        <text>Виконано</text>
+}else{
+    <text>Ще не виконано</text>
+}
 
 
