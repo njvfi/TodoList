@@ -18,7 +18,7 @@ namespace TodoList.ViewModels
             NameSort = SortState.NameAsc;
             TypeSort = SortState.TypeAsc;
             TimeSort = SortState.TimeAsc;
-            StatusSort= SortState.StatusAsc;
+            StatusSort = SortState.StatusAsc;
             Up = true;
 
             if (sortOrder == SortState.NameDesc
@@ -47,10 +47,10 @@ namespace TodoList.ViewModels
                     Current = TimeSort = SortState.TimeAsc;
                     break;
                 case SortState.StatusAsc:
-                    Current= StatusSort = SortState.StatusAsc;
+                    Current= StatusSort = SortState.StatusDesc;
                     break;
                 case SortState.StatusDesc:
-                    Current= StatusSort = SortState.StatusDesc;
+                    Current= StatusSort = SortState.StatusAsc;
                     break;
                 default:
                     Current = NameSort = SortState.NameDesc;

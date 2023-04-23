@@ -151,7 +151,7 @@ namespace TodoList.DAL.Repositories
                 User tom = new User {Email = "test@gmail.com", Name = "Test", Password = "test"};
                 tom.Goals.Add(goal1);
 
-                _goalContext.Types.AddRange(not_defined, home, home, work);
+                _goalContext.Types.AddRange(not_defined, home, sport, work);
                 _goalContext.Goals.Add(goal1);
                 _goalContext.Users.Add(tom);
                 _goalContext.SaveChanges();
