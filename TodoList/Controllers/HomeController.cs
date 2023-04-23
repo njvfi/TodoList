@@ -16,43 +16,42 @@ namespace TodoList.Controllers
         private readonly GoalRepository _goalRepository;
 
 
-        #region Controller
         public HomeController(ILogger<HomeController> logger, GoalRepository goalRepository)
         {
             _logger = logger;
             _goalRepository = goalRepository;
             _goalRepository.InitAsync();
         }
-        #endregion
 
         [AllowAnonymous]
-        public ActionResult Index()
-        {
-            return View();
-        }
-
         [HttpGet]
-        public async Task<ActionResult> TaskList(int? type, string? name, SortState sortOrder = SortState.NameAsc)
+        public async Task<ActionResult> Index(int? type, string? name, SortState sortOrder = SortState.NameAsc)
         {
-            var userid = Convert.ToInt32(Request.Cookies["UserId"]);
-
-            var goal = await _goalRepository.GetGoalsAsync(type, name, userid, sortOrder);
-
-            var types = await _goalRepository.GetTypesAsync();
-            // устанавливаем начальный элемент, который позволит выбрать всех
-            types.Insert(0, new DAL.Entities.Type { Name = "Все", Id = 0 });
-
-            GoalListViewModel viewModel = new GoalListViewModel
+            if (!User.Identity.IsAuthenticated)
             {
-                Goals = goal,
-                Types = new SelectList(types, "Id", "Name", type),
-                Name = name,
-                SortViewModel = new SortViewModel(sortOrder)
-            };
+                return View();
+            }
+            else 
+            {
+				var userid = Convert.ToInt32(Request.Cookies["UserId"]);
 
-            return View(viewModel);
+				var goal = await _goalRepository.GetGoalsAsync(type, name, userid, sortOrder);
+
+				var types = await _goalRepository.GetTypesAsync();
+				// устанавливаем начальный элемент, который позволит выбрать всех
+				types.Insert(0, new DAL.Entities.Type { Name = "Все", Id = 0 });
+
+				GoalListViewModel viewModel = new GoalListViewModel
+				{
+					Goals = goal,
+					Types = new SelectList(types, "Id", "Name", type),
+					Name = name,
+					SortViewModel = new SortViewModel(sortOrder)
+				};
+
+				return View(viewModel);
+			}
         }
-
 
         public async Task<ActionResult> Filtration(int? type, string? name)
         {

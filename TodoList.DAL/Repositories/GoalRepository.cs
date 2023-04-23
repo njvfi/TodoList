@@ -29,8 +29,6 @@ namespace TodoList.DAL.Repositories
         {
             IQueryable<Goal> goal = _goalContext.Goals.Include<Goal, Entities.Type>(g => g.Type).Where(g => g.UserId == userid);
 
-            //goal = await _goalContext.Goals.Where(g => g.UserId == userid).ToListAsync();
-
             if (type != null && type != 0)
             {
                 goal = goal.Where(g => g.TypeId == type);
@@ -59,10 +57,12 @@ namespace TodoList.DAL.Repositories
             goal = sortOrder switch
             {
                 SortState.NameDesc => goal.OrderByDescending(s => s.Name),
-                SortState.PriceAsc => goal.OrderBy(s => s.Time),
-                SortState.PriceDesc => goal.OrderByDescending(s => s.Time),
+                SortState.TimeAsc => goal.OrderBy(s => s.Time),
+                SortState.TimeDesc => goal.OrderByDescending(s => s.Time),
                 SortState.TypeAsc => goal.OrderBy(s => s.Type!.Name),
                 SortState.TypeDesc => goal.OrderByDescending(s => s.Type!.Name),
+                SortState.StatusAsc => goal.OrderBy(s => s.Status),
+                SortState.StatusDesc => goal.OrderByDescending(s => s.Status),
                 _ => goal.OrderBy(s => s.Name),
             };
 
@@ -111,6 +111,7 @@ namespace TodoList.DAL.Repositories
             return await _goalContext.Types.ToListAsync();
         }
 
+        #region User
         public async Task<bool> LoginAsync(User user)
         {
             var result = await _goalContext.Users.SingleOrDefaultAsync(u => u.Email == user.Email && u.Password == user.Password);
@@ -133,6 +134,7 @@ namespace TodoList.DAL.Repositories
             }
             return false;
         }
+        #endregion
 
         public async Task InitAsync() 
         {
@@ -144,12 +146,12 @@ namespace TodoList.DAL.Repositories
                 Entities.Type sport = new Entities.Type { Name = "Спорт" };
                 Entities.Type work = new Entities.Type { Name = "Робота" };
 
-                Goal goal1 = new Goal { Name = "Ознайомитися з платформою", Description = "Ознайомитися з платформою, навчитися користуватися всіма можливостями", Type = not_defined, Status = false, UserId = 0 };
+                Goal goal1 = new Goal { Name = "Ознайомитися з платформою", Description = "Ознайомитися з платформою, навчитися користуватися всіма можливостями", Type = not_defined, Status = false, UserId = 1 };
 
-                User tom = new User {Email = "test@gmail.com", Name = "Test",  Id = 0, Password = "test"};
+                User tom = new User {Email = "test@gmail.com", Name = "Test", Password = "test"};
                 tom.Goals.Add(goal1);
 
-                _goalContext.Types.AddRange(not_defined, home, home, work);
+                _goalContext.Types.AddRange(not_defined, home, sport, work);
                 _goalContext.Goals.Add(goal1);
                 _goalContext.Users.Add(tom);
                 _goalContext.SaveChanges();

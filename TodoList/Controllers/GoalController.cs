@@ -52,7 +52,7 @@ namespace TodoList.Controllers
 
             await _goalRepository.CreateGoalAsync(goal);
 
-            return RedirectToAction("TaskList", "Home");
+            return RedirectToAction("Index", "Home");
         }
         #endregion
 
@@ -64,7 +64,7 @@ namespace TodoList.Controllers
             {
                 await _goalRepository.DeleteGoalAsync(id.Value);
 
-                return RedirectToAction("TaskList", "Home");
+                return RedirectToAction("Index", "Home");
             }
 
             return NotFound();
@@ -103,18 +103,18 @@ namespace TodoList.Controllers
 
             await _goalRepository.EditGoalAsync(goal);
 
-            return RedirectToAction("TaskList", "home");
+            return RedirectToAction("Index", "home");
         }
         #endregion
 
         [HttpPost]
-        public async Task<IActionResult> ChangeStatus(int? id)
+        public async Task<IActionResult> SwitchStatus(int? id)
         {
             if (id != null)
             {
                 await _goalRepository.SwitchGoalStatusAsync(id.Value);
 
-                return RedirectToAction("TaskList", "Home");
+                return RedirectToAction("Index", "Home");
             }
 
             return NotFound();

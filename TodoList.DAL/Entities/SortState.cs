@@ -4,9 +4,11 @@
     {
         NameAsc,   
         NameDesc,   
-        PriceAsc,   
-        PriceDesc,  
+        TimeAsc,   
+        TimeDesc,  
         TypeAsc,    
-        TypeDesc,    
+        TypeDesc,
+        StatusAsc,
+        StatusDesc
     }
 }
