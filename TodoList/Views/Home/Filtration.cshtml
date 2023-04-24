@@ -5,28 +5,26 @@
 @model GoalListViewModel
 @using TodoList.ViewModels
   
-<h2>Каталог продуктов</h2>
+<h2>Ваші завдання</h2>
   
 <form method="get">
     <div>
-        <label>Название </label>
+        <label>Назва </label>
         <input asp-for="Name" />
-
-        @*<label>Цена </label>
-        <input asp-for="Price" />*@
   
         <label>Тип </label>
         <select name="Type" asp-items="Model.Types"></select>
   
-        <input type="submit" value="Фильтр" />
+        <input type="submit" value="Фільтр" />
     </div>
 </form>
   
 <table>
     <tr>
-        <th>Название</th>
-        <th>Цена</th>
+        <th>Назва</th>
         <th>Тип</th>
+        <th>Час</th>
+        <th>Статус</th>
     </tr>
   
     @foreach (var item in Model.Goals)
@@ -35,8 +33,20 @@
             <td>
                 <a asp-action="index" asp-controller="product" asp-route-id="@item.Id">@item.Name</a>
             </td>
-            <td>@item.Time</td>
             <td>@item.Type?.Name</td>
+            @if(item.Time > DateTime.Now){
+                TimeSpan ActualTime = (DateTime.Now - item.Time).Duration();
+                string OutputTime = ActualTime.Days + " днів " + ActualTime.ToString(@"hh\:mm");
+                <td>Залишилося @OutputTime</td>
+            }
+            else if(item.Time.Year < 2023) {<td></td>}
+            else{<td>Прострочено</td>}
+            @if(item.Status == true){
+                <td> Виконано</td>
+            }else{
+                <td>Не виконано</td>
+            }
+            
         </tr>
     }
 </table>
