@@ -6,7 +6,7 @@ namespace TodoList.DAL.Entities
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage ="Обязательное поле")]
+        [Required(ErrorMessage ="Обов'язкове поле")]
         public string? Name { get; set; }
         public string? Description { get; set; }
         public Boolean Status { get; set; }

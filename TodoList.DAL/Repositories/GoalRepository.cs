@@ -138,7 +138,6 @@ namespace TodoList.DAL.Repositories
 
         public async Task InitAsync() 
         {
-            // добавим начальные данные для тестирования
             if (!_goalContext.Types.Any())
             {
                 Entities.Type not_defined = new Entities.Type { Name = "Без категорії" };
